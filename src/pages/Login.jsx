@@ -14,7 +14,7 @@ export default function Login({ onLogin }) {
   const submit = async () => {
     setError(null);
     try {
-      const url = `${API_BASE}/api/${mode}`;
+      const url = `${API_BASE}/${mode}`;
       const res = await axios.post(url, { username, password });
       if (res.data.token) {
         onLogin(res.data.token);
