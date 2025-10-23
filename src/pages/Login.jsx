@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_BASE = 'https://nm2599bc-5000.inc1.devtunnels.ms/';
+const API_BASE = 'https://nm2599bc-5000.inc1.devtunnels.ms';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
