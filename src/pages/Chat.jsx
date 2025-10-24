@@ -44,14 +44,16 @@ export default function Chat({ token }) {
   // audioRef is used to autoplay supportive song if backend requests it
 
   const send = async () => {
-    if (!input.trim()) return;
-    setMessages(prev => [...prev, { from: 'user', text: input }]);
-    setInput('');
+    const text = input.trim();
+    if (!text) return;
+    if (loading) return;
     setLoading(true);
+    setMessages(prev => [...prev, { from: 'user', text }]);
+    setInput('');
 
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await axios.post(`${API_BASE}/api/chat`, { message: input }, { headers });
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await axios.post(`${API_BASE}/api/chat`, { message: text }, { headers });
 
       const body = res.data || {};
       const displayReply = body.reply || 'No reply';
@@ -63,10 +65,9 @@ export default function Chat({ token }) {
           const rawUrl = body.song_url
           console.log('backend song_url:', rawUrl)
           // if backend returned a relative path (starts with '/'), prefix API_BASE
-          // const resolved = rawUrl.startsWith('http') ? rawUrl : `${API_BASE}${rawUrl}`
-          // console.log('resolved song url:', resolved)
+          const resolved = rawUrl.startsWith('http') ? rawUrl : `${API_BASE}${rawUrl}`
           if (audioRef.current) {
-            audioRef.current.src = rawUrl
+            audioRef.current.src = resolved
             audioRef.current.play().catch(e => console.warn('Audio play prevented', e))
           }
         } catch (e) {
@@ -84,46 +85,48 @@ export default function Chat({ token }) {
   };
 
   const onKey = e => {
-    if (e.key === 'Enter') send();
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
   };
 
   return (
-    <div className="chat-page">
-      {/* server auto-detects language; no UI control */}
-      <audio ref={audioRef} hidden />
+    <div className="chat-wrapper">
+      <div className="chat-container">
+        {/* server auto-detects language; no UI control */}
+        <audio ref={audioRef} hidden />
 
-      {/* Chat Messages */}
-      <div
-        className="chat"
-        ref={listRef}
-        style={{ minHeight: 360, maxHeight: '60vh', overflow: 'auto', padding: '8px 12px' }}
-      >
-        {messages.map((m, idx) => (
-          <div key={idx} className={`msg ${m.from}`}>
-            <div className="msg-row" style={{ display: 'flex', alignItems: 'flex-end', marginBottom: 8 }}>
-              {m.from === 'aura' && <div className="avatar" style={{ marginRight: 8 }}>A</div>}
-              <div className="bubble" style={{ padding: '8px 12px', borderRadius: 12, backgroundColor: m.from === 'aura' ? '#eee' : '#acf', maxWidth: '70%' }}>
-                {m.text}
-                <div className="meta" style={{ fontSize: 10, textAlign: 'right' }}>{m.time || new Date().toLocaleTimeString()}</div>
+        {/* Chat Messages */}
+        <div className="chat" ref={listRef}>
+          {messages.map((m, idx) => (
+            <div key={idx} className={`msg ${m.from}`}>
+              <div className="msg-row" style={{ display: 'flex', alignItems: 'flex-end', marginBottom: 8 }}>
+                {m.from === 'aura' && <div className="avatar" style={{ marginRight: 8 }}>A</div>}
+                <div className="bubble">
+                  {m.text}
+                  <div className="meta">{m.time || new Date().toLocaleTimeString()}</div>
+                </div>
+                {m.from === 'user' && <div className="avatar" style={{ marginLeft: 8 }}>U</div>}
               </div>
-              {m.from === 'user' && <div className="avatar" style={{ marginLeft: 8 }}>U</div>}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Composer */}
-      <div className="composer" style={{ display: 'flex', gap: 8, padding: '8px 12px' }}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={onKey}
-          placeholder="Say something to Aura..."
-          style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
-        />
-        <button onClick={send} disabled={loading} style={{ padding: '8px 16px', borderRadius: 8 }}>
-          {loading ? '...' : 'Send'}
-        </button>
+        {/* Composer */}
+        <div className="composer">
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="Message Aura — press Enter to send, Shift+Enter for newline"
+          />
+          <button onClick={send} disabled={loading} className={`icon-btn primary ${loading ? 'btn-loading' : ''}`} title="Send message" aria-label="Send message">
+            {loading ? (<><span className="spinner"/></>) : (
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
