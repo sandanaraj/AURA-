@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import IconButton from '../components/IconButton';
 
 const API_BASE = 'https://nm2599bc-5000.inc1.devtunnels.ms';
 
@@ -121,11 +122,26 @@ export default function Chat({ token }) {
             onKeyDown={onKey}
             placeholder="Message Aura — press Enter to send, Shift+Enter for newline"
           />
-          <button onClick={send} disabled={loading} className={`icon-btn primary ${loading ? 'btn-loading' : ''}`} title="Send message" aria-label="Send message">
-            {loading ? (<><span className="spinner"/></>) : (
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <IconButton 
+            onClick={send} 
+            disabled={loading} 
+            title="Send message"
+            color="#4f46e5"
+            style={{
+              background: loading ? '#f3f4f6' : '#4f46e5',
+              padding: '10px',
+              transition: 'all 0.2s'
+            }}
+          >
+            {loading ? (
+              <span className="spinner" style={{borderColor: 'rgba(79,70,229,0.3)', borderTopColor: '#4f46e5'}}/>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 2L11 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             )}
-          </button>
+          </IconButton>
         </div>
       </div>
     </div>
